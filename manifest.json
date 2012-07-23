@@ -1,0 +1,13 @@
+{
+  // Required
+  "name": "Tabby",
+  "version": "0.1",
+  "manifest_version": 1,
+  // Recommended
+  "description": "Tabs like apps.",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "offline_enabled": true,
+  "permissions": ["tabs"]
+}
