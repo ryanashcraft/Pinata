@@ -1,10 +1,8 @@
 {
-  // Required
-  "name": "Tabby",
+  "name": "Piñata",
   "version": "0.1",
   "manifest_version": 1,
-  // Recommended
-  "description": "Tabs like apps.",
+  "description": "Prevent opening sites in a new tab that are already opened in a pinned tab. Also prevent closing pinned tabs.",
   "background": {
     "page": "background.html"
   },
