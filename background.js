@@ -1,21 +1,64 @@
 
+var urls = [];
+
 chrome.tabs.onUpdated.addListener(function(tabId, updateInfo, tab) {
 	var url = updateInfo.url;
 
 	if (url != undefined) {
 		checkForHit(url, tabId);
 	}
+
+	setUrls();
 });
 
 chrome.tabs.onCreated.addListener(function(tab) {
 	var url = tab.url;
 
-	urlMatch("apple.com", "facebook.com");
-
 	if (url != undefined) {
 		checkForHit(url, tab.id);
 	}
+
+	setUrls();
 });
+
+chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
+	var url;
+	for (i in urls) {
+		if (urls[i].id == tabId) {
+			url = urls[i].url;
+			break;
+		}
+	}
+
+	if (url != undefined) {
+		chrome.tabs.create({
+			url: url,
+			pinned: true
+		}, function(tab) {
+		})
+	}
+
+	setUrls();
+});
+
+function setUrls() {
+	chrome.windows.getAll({
+		populate: true
+	}, function(windows) {
+		for (i in windows) {
+			var w = windows[i];
+			for (j in w.tabs) {
+				var t = w.tabs[j];
+				if (t.pinned) {
+					urls.push({
+						id: t.id,
+						url: t.url
+					});
+				}
+			}
+		}
+	});
+}
 
 function urlMatch(urlA, urlB) {
 	var domainRegex = /^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/igm;
