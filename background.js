@@ -1,31 +1,34 @@
 
-var urls = [];
+var pinnedTabs = [];
 
 chrome.tabs.onUpdated.addListener(function(tabId, updateInfo, tab) {
 	var url = updateInfo.url;
 
+	setPinnedTabs();
+
 	if (url != undefined) {
 		checkForHit(url, tabId);
 	}
-
-	setUrls();
 });
 
 chrome.tabs.onCreated.addListener(function(tab) {
 	var url = tab.url;
 
+	setPinnedTabs();
+
 	if (url != undefined) {
 		checkForHit(url, tab.id);
 	}
-
-	setUrls();
 });
 
 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
-	var url;
-	for (i in urls) {
-		if (urls[i].id == tabId) {
-			url = urls[i].url;
+	var url, index;
+	var closedTabIndex;
+	for (i in pinnedTabs) {
+		if (pinnedTabs[i].id == tabId) {
+			url = pinnedTabs[i].url;
+			index = pinnedTabs[i].index;
+			closedTabIndex = i;
 			break;
 		}
 	}
@@ -33,28 +36,50 @@ chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
 	if (url != undefined) {
 		chrome.tabs.create({
 			url: url,
-			pinned: true
+			pinned: true,
+			// index: index
 		}, function(tab) {
+			pinnedTabs[closedTabIndex].id = tab.id;
 		})
 	}
 
-	setUrls();
+	// setPinnedTabs();
 });
 
-function setUrls() {
-	chrome.windows.getAll({
+chrome.tabs.onAttached.addListener(function(tabId, attachInfo) {
+	setPinnedTabs();
+});
+
+chrome.tabs.onDetached.addListener(function(tabId, detachInfo) {
+	setPinnedTabs();
+});
+
+chrome.tabs.onMoved.addListener(function(tabId, moveInfo) {
+	setPinnedTabs({
+		windowId: moveInfo.windowId,
+		tabId: tabId,
+		toIndex: moveInfo.toIndex
+	});
+});
+
+function setPinnedTabs(updateInfo) {
+	chrome.windows.getCurrent({
 		populate: true
-	}, function(windows) {
-		for (i in windows) {
-			var w = windows[i];
-			for (j in w.tabs) {
-				var t = w.tabs[j];
-				if (t.pinned) {
-					urls.push({
-						id: t.id,
-						url: t.url
-					});
+	}, function(w) {
+		for (j in w.tabs) {
+			var t = w.tabs[j];
+			if (t.pinned) {
+				var toIndex = t.index;
+
+				if (updateInfo != undefined && (w.id == updateInfo.windowId && t.id == updateInfo.tabId)) {
+					toindex = updateInfo.toIndex;
 				}
+
+				pinnedTabs.push({
+					id: t.id,
+					url: t.url,
+					index: toIndex
+				});
 			}
 		}
 	});
