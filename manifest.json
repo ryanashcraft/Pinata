@@ -6,7 +6,7 @@
   // Recommended
   "description": "Tabs like apps.",
   "background": {
-    "scripts": ["background.js"]
+    "page": "background.html"
   },
   "offline_enabled": true,
   "permissions": ["tabs"]

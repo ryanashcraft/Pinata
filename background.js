@@ -45,6 +45,18 @@ chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
 	}
 });
 
+function init() {
+	setPinnedTabs();
+}
+
+chrome.tabs.onActivated.addListener(function(activeInfo) {
+	setPinnedTabs();
+});
+
+chrome.tabs.onHighlighted.addListener(function(highlightInfo) {
+	setPinnedTabs();
+});
+
 chrome.tabs.onAttached.addListener(function(tabId, attachInfo) {
 	setPinnedTabs();
 });
@@ -59,6 +71,10 @@ chrome.tabs.onMoved.addListener(function(tabId, moveInfo) {
 		tabId: tabId,
 		toIndex: moveInfo.toIndex
 	});
+});
+
+chrome.management.onEnabled.addListener(function(info) {
+	setPinnedTabs();
 });
 
 function setPinnedTabs(updateInfo) {
