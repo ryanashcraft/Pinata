@@ -37,13 +37,12 @@ chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
 		chrome.tabs.create({
 			url: url,
 			pinned: true,
+			active: false
 			// index: index
 		}, function(tab) {
 			pinnedTabs[closedTabIndex].id = tab.id;
 		})
 	}
-
-	// setPinnedTabs();
 });
 
 chrome.tabs.onAttached.addListener(function(tabId, attachInfo) {
@@ -96,7 +95,7 @@ function urlMatch(urlA, urlB) {
 	}
 
 	if (a[4] == b[4]) {
-		if (a[5] == b[5] && a[8] == b[8]) {
+		if (a[5] == b[5]) {
 			return "full";
 		} else {
 			return "partial";
