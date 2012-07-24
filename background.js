@@ -1,5 +1,6 @@
 
 var pinnedTabs = [];
+var mainWindow;
 
 chrome.tabs.onUpdated.addListener(function(tabId, updateInfo, tab) {
 	var url = updateInfo.url;
@@ -7,7 +8,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, updateInfo, tab) {
 	setPinnedTabs();
 
 	if (url != undefined) {
-		checkForHit(url, tabId);
+		checkForHit(url, tab);
 	}
 });
 
@@ -17,7 +18,7 @@ chrome.tabs.onCreated.addListener(function(tab) {
 	setPinnedTabs();
 
 	if (url != undefined) {
-		checkForHit(url, tab.id);
+		checkForHit(url, tab);
 	}
 });
 
@@ -73,14 +74,12 @@ chrome.tabs.onMoved.addListener(function(tabId, moveInfo) {
 	});
 });
 
-chrome.management.onEnabled.addListener(function(info) {
-	setPinnedTabs();
-});
-
 function setPinnedTabs(updateInfo) {
 	chrome.windows.getCurrent({
 		populate: true
 	}, function(w) {
+		mainWindow = w;
+
 		for (j in w.tabs) {
 			var t = w.tabs[j];
 			if (t.pinned) {
@@ -119,7 +118,7 @@ function urlMatch(urlA, urlB) {
 	}
 }
 
-function checkForHit(url, tabId) {
+function checkForHit(url, tab) {
 	chrome.windows.getAll({
 		populate: true
 	}, function(windows) {
@@ -127,12 +126,14 @@ function checkForHit(url, tabId) {
 			var w = windows[i];
 			for (j in w.tabs) {
 				var t = w.tabs[j];
-				if (tabId != t.id && t.pinned) {
+				if (tab.id != t.id
+					&& t.pinned
+					&& t.windowId == mainWindow.id) {
 					var match = urlMatch(url, t.url);
 					if (match == "full") {
-						hit(tabId, t, t.windowId);
+						hit(tab.id, t, t.windowId);
 					} else if (match == "partial") {
-						hit(tabId, t, t.windowId, url);
+						hit(tab.id, t, t.windowId, url);
 					}
 				}
 			}
