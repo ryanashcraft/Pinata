@@ -23,21 +23,9 @@ chrome.tabs.onMoved.addListener(function(tabId, moveInfo) {
 	
 });
 
-// chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
-// 	var url, index;
-// 	var closedTabIndex;
-
-// 	if (url != undefined) {
-// 		chrome.tabs.create({
-// 			url: url,
-// 			pinned: true,
-// 			active: false
-// 			// index: index
-// 		}, function(tab) {
-// 			pinnedTabs[closedTabIndex].id = tab.id;
-// 		})
-// 	}
-// });
+chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
+	openPinnedTabsFromBookmarks();
+});
 
 function init() {
 	//set main window
@@ -46,6 +34,10 @@ function init() {
 	});
 
 	// make bookmarks folder if already not made
+	openPinnedTabsFromBookmarks();
+}
+
+function openPinnedTabsFromBookmarks() {
 	chrome.bookmarks.getTree(function(tree) {
 		var folderFound = false;
 		var otherBookmarksTree = tree[0].children[1];
@@ -65,16 +57,20 @@ function init() {
 
 			chrome.bookmarks.create({
 				title: FOLDER_TITLE
+			}, function(tree) {
+				for (i = 0; i < folder.children.length; i++) {
+					openUrlInTabIfShould(folder.children[i].url, parseInt(folder.children[i].index));
+				}
 			});
 		} else {
 			for (i = 0; i < folder.children.length; i++) {
-				openUrlInTabIfShould(folder.children[i].url);
+				openUrlInTabIfShould(folder.children[i].url, parseInt(folder.children[i].index));
 			}
 		}
 	});
 }
 
-function openUrlInTabIfShould(url) {
+function openUrlInTabIfShould(url, index) {
 	if (url != null) {
 		chrome.windows.get(mainWindow.id, {
 			populate: true
@@ -85,7 +81,7 @@ function openUrlInTabIfShould(url) {
 					url: url,
 					pinned: true,
 					active: true,
-					index: parseInt(i)
+					index: index
 				}, function(tab) {
 
 				});
@@ -104,8 +100,6 @@ function tabShouldBeOpened(tabs, url) {
 
 		if (urlMatch(t.url, url)) {
 			shouldBeOpened = false;
-		} else {
-			console.log(t.url + " " + url);
 		}
 	}
 
