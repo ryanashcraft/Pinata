@@ -7,5 +7,5 @@
     "page": "background.html"
   },
   "offline_enabled": true,
-  "permissions": ["tabs"]
+  "permissions": ["tabs", "bookmarks"]
 }
