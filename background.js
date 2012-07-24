@@ -1,7 +1,7 @@
 
 const FOLDER_TITLE = "Pi\u00F1ata Tabs";
 
-var mainWindow;
+var mainWindowId;
 
 chrome.tabs.onUpdated.addListener(function(tabId, updateInfo, tab) {
 	var url = updateInfo.url;
@@ -30,7 +30,7 @@ chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
 function init() {
 	//set main window
 	chrome.windows.getCurrent(function(w) {
-		mainWindow = w;
+		mainWindowId = w.id;
 	});
 
 	// make bookmarks folder if already not made
@@ -72,7 +72,7 @@ function openPinnedTabsFromBookmarks() {
 
 function openUrlInTabIfShould(url, index) {
 	if (url != null) {
-		chrome.windows.get(mainWindow.id, {
+		chrome.windows.get(mainWindowId, {
 			populate: true
 		}, function(w) {
 			var shouldBeOpened = tabShouldBeOpened(w.tabs, url);
@@ -136,15 +136,14 @@ function urlMatch(urlA, urlB) {
 }
 
 function checkForHit(url, tab) {
-	chrome.windows.get(mainWindow.id, {
+	chrome.windows.get(mainWindowId, {
 		populate: true
 	}, function(w) {
-		mainWindow = w;
 		for (j in w.tabs) {
 			var t = w.tabs[j];
 			if (tab.id != t.id
 				&& t.pinned
-				&& tab.windowId == mainWindow.id) {
+				&& tab.windowId == mainWindowId) {
 				var match = urlMatch(url, t.url);
 				if (match == "full") {
 					hit(tab.id, t, t.windowId);
