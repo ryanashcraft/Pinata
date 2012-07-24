@@ -19,21 +19,15 @@ chrome.tabs.onCreated.addListener(function(tab) {
 	}
 });
 
-chrome.tabs.onMoved.addListener(function(tabId, moveInfo) {
-	
-});
-
 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
 	openPinnedTabsFromBookmarks();
 });
 
 function init() {
-	//set main window
 	chrome.windows.getCurrent(function(w) {
 		mainWindowId = w.id;
 	});
 
-	// make bookmarks folder if already not made
 	openPinnedTabsFromBookmarks();
 }
 
@@ -139,11 +133,22 @@ function checkForHit(url, tab) {
 	chrome.windows.get(mainWindowId, {
 		populate: true
 	}, function(w) {
+		var openedFromPinnedTabId = null;
+
+		for (i in w.tabs) {
+			var t = w.tabs[i];
+			if (t.pinned == true && tab.openerTabId == t.id) {
+				openedFromPinnedTabId = t.id;
+				break;
+			}
+		}
+
 		for (j in w.tabs) {
 			var t = w.tabs[j];
 			if (tab.id != t.id
 				&& t.pinned
-				&& tab.windowId == mainWindowId) {
+				&& tab.windowId == mainWindowId
+				&& openedFromPinnedTabId != t.id) {
 				var match = urlMatch(url, t.url);
 				if (match == "full") {
 					hit(tab.id, t, t.windowId);
